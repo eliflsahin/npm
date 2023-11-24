@@ -1,5 +1,53 @@
 import requests
+from bs4 import BeautifulSoup
 
+# Function to get GitHub link from npm
+def get_github_link(package_name):
+    npm_search_url = f"https://registry.npmjs.org/-/v1/search?text={package_name}&size=1"
+    response = requests.get(npm_search_url)
+
+    if response.status_code == 200:
+        search_results = response.json().get('objects', [])
+        if search_results:
+            package_info = search_results[0].get('package')
+            if 'links' in package_info and 'repository' in package_info['links']:
+                return package_info['links']['repository']
+            elif package_name == 'qs':
+                # Manually set GitHub link for 'qs' package
+                return 'https://github.com/ljharb/qs'
+            else:
+                # If GitHub link is not present in the response, try to fetch it from the npm package page
+                github_link = get_github_link_from_npm_page(package_name)
+                return github_link
+    return None
+
+# Function to get GitHub link from npm package page
+def get_github_link_from_npm_page(package_name):
+    npm_page_url = f"https://www.npmjs.com/package/{package_name}"
+    response = requests.get(npm_page_url)
+
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, 'lxml')
+        repository_link = soup.find('a', class_='homepage')
+        if repository_link:
+            return repository_link['href']
+
+    return None
+
+# Function to check if there is a release for a GitHub repository
+def has_github_release(github_link):
+    if github_link:
+        github_api_url = f"{github_link}/releases/latest"
+        response = requests.get(github_api_url)
+
+        try:
+            response.raise_for_status()
+            if "There aren’t any releases here" not in response.text:
+                return True
+        except Exception as e:
+            print(f"Error checking GitHub release for {github_link}: {e}")
+
+    return False
 # Function to get the latest version of a package
 def get_latest_version(package_name):
     url = f"https://api.deps.dev/v3alpha/systems/npm/packages/{package_name}"

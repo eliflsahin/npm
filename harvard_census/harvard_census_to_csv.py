@@ -3,7 +3,7 @@ import csv
 from harvard_functions import get_latest_version, get_latest_version_dependencies, is_dependency_signed, get_github_link, get_github_link_from_npm_page, has_github_release
 
 # Load the Excel file
-excel_file = 'harvard_census_top_100.xlsx'
+excel_file = 'harvard_census_top_100.xls'  # Change the file extension to .xls
 df = pd.read_excel(excel_file)
 
 # Create and open a CSV file for writing

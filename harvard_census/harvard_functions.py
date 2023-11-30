@@ -1,3 +1,4 @@
+pip install xlrd>=2.0.1
 import requests
 from bs4 import BeautifulSoup
 
